@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus System - بوابة الدخول</title>
+    <!-- استيراد خط تجنن عشان التصميم يبقى فخم -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-card {
+            background-color: #1e293b;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 10px;
+            color: #38bdf8;
+        }
+        .status-box {
+            font-size: 13px;
+            margin-bottom: 20px;
+            padding: 8px;
+            border-radius: 8px;
+            background: #334155;
+            color: #94a3b8;
+        }
+        .status-box.online {
+            background: #064e3b;
+            color: #34d399;
+        }
+        .status-box.retry {
+            background: #78350f;
+            color: #fbbf24;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: white;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+        input:focus {
+            border-color: #38bdf8;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #0284c7;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-family: 'Cairo', sans-serif;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #0ea5e9;
+        }
+        #resultMsg {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h2>🚀 Nexus System</h2>
+        <div id="tunnelStatus" class="status-box">⏳ جاري جلب رابط السيرفر من الفايبرس...</div>
+        
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="اسم المستخدم (admin)" required>
+            <input type="password" id="password" placeholder="كلمة المرور (123)" required>
+            <button type="submit" id="submitBtn" disabled>دخول 🔓</button>
+        </form>
+        
+        <div id="resultMsg"></div>
+    </div>
+
+    <script>
+        const firebaseURL = "https://nexus-bb8b3-default-rtdb.firebaseio.com/.json";
+        let dynamicServerUrl = "";
+
+        // دالة لجلب رابط السيرفر من الفايبرس
+        async function fetchServerUrl() {
+            const statusBox = document.getElementById('tunnelStatus');
+            statusBox.className = "status-box";
+            statusBox.innerText = "⏳ جاري تحديث رابط السيرفر من الفايبرس...";
+            document.getElementById('submitBtn').disabled = true;
+
+            try {
+                let response = await fetch(firebaseURL);
+                let data = await response.json();
+                
+                if (data && data.tunnel_url) {
+                    dynamicServerUrl = data.tunnel_url;
+                    
+                    statusBox.innerHTML = `✅ السيرفر شغال أونلاين ومربوط!`;
+                    statusBox.classList.add('online');
+                    
+                    // نفتح زرار الدخول طالما الرابط جه
+                    document.getElementById('submitBtn').disabled = false;
+                } else {
+                    statusBox.innerText = "⚠️ الرابط لسه مش موجود في القاعدة.";
+                }
+            } catch (error) {
+                console.error("خطأ في جلب الرابط:", error);
+                statusBox.innerText = "❌ حصلت مشكلة في الاتصال بالفايبرس.";
+            }
+        }
+
+        // تنفيذ الدالة أول ما الصفحة تحمل
+        fetchServerUrl();
+
+        // التعامل مع فورم تسجيل الدخول وإرساله للسيرفر الديناميكي
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const msgDiv = document.getElementById('resultMsg');
+            const statusBox = document.getElementById('tunnelStatus');
+
+            msgDiv.innerText = "⏳ جاري التحقق والاتصال بالسيرفر...";
+            msgDiv.style.color = "#38bdf8";
+
+            try {
+                let response = await fetch(`${dynamicServerUrl}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: user,
+                        password: pass
+                    })
+                });
+
+                let result = await response.json();
+
+                if (result.states === 'true') {
+                    msgDiv.innerText = "🎉 أهلاً يا أسطورة! تسجيل الدخول ناجح 100%.";
+                    msgDiv.style.color = "#34d399";
+                } else {
+                    msgDiv.innerText = "❌ اسم المستخدم أو كلمة المرور غلط يا غالي.";
+                    msgDiv.style.color = "#f87171";
+                }
+            } catch (err) {
+                console.error(err);
+                msgDiv.innerText = "⚠️ فشل الاتصال بالسيرفر القديم.. جاري جلب عنوان جديد تلقائياً 🔄";
+                msgDiv.style.color = "#fbbf24";
+                
+                statusBox.className = "status-box retry";
+                statusBox.innerText = "🔄 السيرفر غير متصل، جاري إعادة جلب الرابط...";
+
+                // أول ما يفشل الاتصال، بنستدعي دالة الجلب تاني لوحدها من غير ريفريش! 😎
+                setTimeout(() => {
+                    fetchServerUrl();
+                    msgDiv.innerText = "";
+                }, 2000);
+            }
+        });
+    </script>
+
+</body>
+</html>
