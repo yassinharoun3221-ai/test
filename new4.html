@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+    // التحقق من Token فوري قبل أي حاجة
+    (function() {
+        try {
+            const token = sessionStorage.getItem("purple-auth-token");
+            if (token) {
+                document.documentElement.classList.add("has-session-token");
+            }
+        } catch (_) {}
+    })();
+</script>
+<title>Nexus Control Center</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f0f2f8;
+    color: #1a1a2e;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* ===== AUTH ===== */
+#authGate {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #e8ecf4 0%, #d5dbe8 100%);
+}
+.auth-box {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 40px 36px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e8ecf4;
+}
+.auth-box .logo {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 26px;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 18px;
+}
+.auth-box h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin-bottom: 6px;
+}
+.auth-box h1 span {
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.auth-box p {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+.auth-input {
+    width: 100%;
+    padding: 13px 16px;
+    background: #f8f9fc;
+    border: 2px solid #e8ecf4;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a1a2e;
+    outline: none;
+    margin-bottom: 12px;
+    font-family: inherit;
+}
+.auth-input:focus {
+    border-color: #6c5ce7;
+    background: #fff;
+}
+.auth-input::placeholder {
+    color: #a0a8b8;
+}
+.auth-submit {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.auth-submit:hover:not(:disabled) {
+    opacity: 0.85;
+}
+.auth-submit:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}
+.auth-message {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #6b7280;
+    text-align: center;
+}
+.auth-message.error {
+    color: #ef4444;
+}
+
+/* ===== HEADER ===== */
+header {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+    border: 1px solid #e8ecf4;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.brand-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+}
+.brand h1 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1a1a2e;
+}
+.brand h1 span {
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+.badge {
+    background: #f0f2f8;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a4a6a;
+    border: 1px solid #e2e6f0;
+}
+.badge strong {
+    color: #1a1a2e;
+    font-weight: 800;
+}
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a4a6a;
+}
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+}
+.status-dot.online {
+    background: #22c55e;
+}
+.logout-btn {
+    background: transparent;
+    border: 1.5px solid #e2e6f0;
+    color: #6b7280;
+    padding: 6px 16px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+}
+.logout-btn:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+/* ===== MAIN ===== */
+main {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+.hero {
+    margin-bottom: 24px;
+}
+.hero h2 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a1a2e;
+    letter-spacing: -0.02em;
+}
+.hero h2 em {
+    font-style: normal;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero p {
+    color: #6b7280;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.section-head h3 {
+    font-size: 12px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.count-badge {
+    background: #f0f2f8;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a4a6a;
+    border: 1px solid #e2e6f0;
+}
+
+.empty {
+    text-align: center;
+    padding: 50px 20px;
+    color: #6b7280;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 2px dashed #d5dbe8;
+}
+.empty span {
+    font-size: 40px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* ===== DEVICE CARDS ===== */
+.devices {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+}
+.device-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 18px 16px;
+    border: 1px solid #e8ecf4;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+    cursor: pointer;
+    position: relative;
+}
+.device-card:hover {
+    border-color: #c4b5fd;
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.06);
+}
+.device-card .icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+.device-card .name {
+    font-weight: 700;
+    font-size: 15px;
+    color: #1a1a2e;
+}
+.device-card .ip {
+    color: #6b7280;
+    font-size: 11px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    margin-top: 2px;
+}
+.device-card .status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #22c55e;
+}
+.device-card .status .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    display: inline-block;
+}
+.device-card .url-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 8px;
+    color: #6b7280;
+    background: #f0f2f8;
+    padding: 2px 8px;
+    border-radius: 16px;
+    border: 1px solid #e2e6f0;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: none;
+    place-items: center;
+    padding: 20px;
+    z-index: 1000;
+}
+.modal-overlay.show {
+    display: grid;
+}
+.modal {
+    background: #ffffff;
+    border-radius: 20px;
+    max-width: 820px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 32px 36px 28px;
+    position: relative;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.08);
+}
+.modal::-webkit-scrollbar {
+    width: 4px;
+}
+.modal::-webkit-scrollbar-track {
+    background: #f0f2f8;
+    border-radius: 99px;
+}
+.modal::-webkit-scrollbar-thumb {
+    background: #d5dbe8;
+    border-radius: 99px;
+}
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    background: #f0f2f8;
+    border: none;
+    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+    cursor: pointer;
+    color: #6b7280;
+    display: grid;
+    place-items: center;
+    font-weight: 300;
+}
+.modal-close:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+.modal h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1a1a2e;
+}
+.modal .sub {
+    color: #6b7280;
+    font-size: 13px;
+    margin-bottom: 16px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+}
+.modal .cmd-url {
+    background: #f0f2f8;
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    font-size: 11px;
+    color: #6c5ce7;
+    border: 1px solid #e2e6f0;
+    display: inline-block;
+    margin-bottom: 18px;
+    word-break: break-all;
+    font-weight: 500;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+    margin-bottom: 20px;
+}
+.info-item {
+    background: #f8f9fc;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #e8ecf4;
+}
+.info-item .label {
+    color: #6b7280;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+}
+.info-item .value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-top: 3px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+}
+
+/* ===== CIRCULAR GAUGES ===== */
+.gauges {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+.gauge-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+.gauge-wrapper .label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.gauge-wrapper .value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+    font-family: 'SF Mono', 'Menlo', monospace;
+}
+.circular-gauge {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+.circular-gauge svg {
+    transform: rotate(-90deg);
+}
+.circular-gauge .bg {
+    fill: none;
+    stroke: #e8ecf4;
+    stroke-width: 8;
+}
+.circular-gauge .progress {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+.circular-gauge .center-text {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: #1a1a2e;
+    font-family: 'SF Mono', 'Menlo', monospace;
+}
+
+/* ===== DISKS ===== */
+.disk-list {
+    margin-top: 14px;
+}
+.disk-item {
+    background: #f8f9fc;
+    border: 1px solid #e8ecf4;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+}
+.disk-item .name {
+    font-weight: 700;
+    font-size: 12px;
+    color: #1a1a2e;
+    font-family: 'SF Mono', 'Menlo', monospace;
+}
+.disk-item .mini-gauge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 6px;
+}
+.disk-item .mini-gauge .track {
+    flex: 1;
+    height: 4px;
+    background: #e8ecf4;
+    border-radius: 99px;
+    overflow: hidden;
+}
+.disk-item .mini-gauge .track .fill {
+    height: 100%;
+    border-radius: 99px;
+}
+.disk-item .mini-gauge .pct {
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    min-width: 44px;
+    text-align: right;
+}
+.disk-item .details {
+    display: flex;
+    gap: 14px;
+    margin-top: 4px;
+    font-size: 11px;
+    color: #6b7280;
+    flex-wrap: wrap;
+}
+.disk-item .details span {
+    font-family: 'SF Mono', 'Menlo', monospace;
+}
+
+/* ===== CONTROLS ===== */
+.controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #f0f2f8;
+}
+.controls .full {
+    grid-column: 1 / -1;
+}
+.ctrl-btn {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #fff;
+}
+.ctrl-btn:hover:not(:disabled) {
+    opacity: 0.85;
+}
+.ctrl-btn:disabled {
+    opacity: 0.4;
+    cursor: wait;
+}
+.ctrl-restart {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+}
+.ctrl-shutdown {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+.ctrl-cmd {
+    background: linear-gradient(135deg, #6c5ce7, #8b5cf6);
+}
+.ctrl-input {
+    background: #f8f9fc;
+    border: 2px solid #e8ecf4;
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: #1a1a2e;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    font-size: 12px;
+    width: 100%;
+    outline: none;
+}
+.ctrl-input:focus {
+    border-color: #6c5ce7;
+    background: #fff;
+}
+.ctrl-row {
+    display: flex;
+    gap: 8px;
+    grid-column: 1 / -1;
+}
+.ctrl-row .ctrl-input {
+    flex: 1;
+}
+.ctrl-result {
+    grid-column: 1 / -1;
+    background: #f8f9fc;
+    border: 1px solid #e8ecf4;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    font-size: 11px;
+    color: #6b7280;
+    min-height: 48px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 120px;
+    overflow-y: auto;
+    line-height: 1.6;
+}
+.ctrl-result.success {
+    border-color: #22c55e;
+    color: #16a34a;
+    background: #f0fdf4;
+}
+.ctrl-result.error {
+    border-color: #ef4444;
+    color: #dc2626;
+    background: #fef2f2;
+}
+
+.delay-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.delay-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4a4a6a;
+}
+.delay-input {
+    background: #f8f9fc;
+    border: 2px solid #e8ecf4;
+    border-radius: 8px;
+    padding: 6px 10px;
+    width: 64px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a2e;
+    outline: none;
+    font-family: 'SF Mono', 'Menlo', monospace;
+}
+.delay-input:focus {
+    border-color: #6c5ce7;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+    body { padding: 12px; }
+    header { padding: 12px 16px; flex-direction: column; align-items: stretch; }
+    .header-right { justify-content: space-between; }
+    .brand h1 { font-size: 16px; }
+    .modal { padding: 20px 16px; }
+    .modal h2 { font-size: 20px; }
+    .info-grid { grid-template-columns: 1fr 1fr; }
+    .devices { grid-template-columns: 1fr 1fr; }
+    .controls { grid-template-columns: 1fr; }
+    .ctrl-row { flex-direction: column; }
+    .gauges { gap: 16px; }
+    .circular-gauge { width: 90px; height: 90px; }
+    .auth-box { padding: 28px 20px; }
+}
+@media (max-width: 400px) {
+    .devices { grid-template-columns: 1fr; }
+    .info-grid { grid-template-columns: 1fr; }
+}
+
+/* إخفاء سريع لصفحة الدخول */
+html.has-session-token #authGate {
+    display: none !important;
+}
+html.has-session-token #dashboard {
+    display: block !important;
+}
+#dashboard[hidden] {
+    display: none !important;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ===== AUTH GATE ===== -->
+<section id="authGate">
+    <div class="auth-box">
+        <div class="logo">⌁</div>
+        <h1>Nexus <span>Control</span></h1>
+        <p>Sign in to access your connected devices and command center.</p>
+        <form id="loginForm">
+            <input id="loginName" class="auth-input" placeholder="Username" required>
+            <input id="loginPassword" class="auth-input" type="password" placeholder="Password" required>
+            <button id="loginBtn" class="auth-submit" type="submit">Sign In →</button>
+        </form>
+        <p id="loginMsg" class="auth-message">Enter your credentials to continue.</p>
+    </div>
+</section>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashboard" hidden>
+
+<header>
+    <div class="brand">
+        <div class="brand-icon">⌁</div>
+        <h1>Nexus <span>Control</span></h1>
+    </div>
+    <div class="header-right">
+        <span class="badge"><strong id="deviceCount">0</strong> devices</span>
+        <span class="status-indicator">
+            <span id="statusDot" class="status-dot"></span>
+            <span id="statusText">Connecting...</span>
+        </span>
+        <button class="logout-btn" id="logoutBtn">Sign Out</button>
+    </div>
+</header>
+
+<main>
+    <div class="hero">
+        <h2>Command your <em>connected world.</em></h2>
+        <p>Select a device to view live telemetry and send commands.</p>
+    </div>
+
+    <div class="section-head">
+        <h3>Connected Devices</h3>
+        <span class="count-badge"><strong id="deviceCount2">0</strong> online</span>
+    </div>
+
+    <div id="emptyState" class="empty" hidden>
+        <span>📡</span>
+        No devices connected
+    </div>
+
+    <div id="devicesContainer" class="devices"></div>
+</main>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <button class="modal-close" id="modalClose">✕</button>
+        <div class="modal-header">
+            <h2 id="modalTitle">Device</h2>
+        </div>
+        <p class="sub" id="modalSub">192.168.1.x</p>
+        <div id="modalCommandUrl" class="cmd-url"></div>
+
+        <div class="info-grid" id="modalInfo"></div>
+
+        <div id="modalResources">
+            <div class="gauges" id="gaugeContainer">
+                <div class="gauge-wrapper">
+                    <div class="circular-gauge" id="cpuGauge">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="bg" cx="50" cy="50" r="42"/>
+                            <circle class="progress" id="cpuCircle" cx="50" cy="50" r="42" stroke="#6c5ce7" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
+                        </svg>
+                        <div class="center-text" id="cpuText">0%</div>
+                    </div>
+                    <span class="label">CPU</span>
+                </div>
+                <div class="gauge-wrapper">
+                    <div class="circular-gauge" id="ramGauge">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="bg" cx="50" cy="50" r="42"/>
+                            <circle class="progress" id="ramCircle" cx="50" cy="50" r="42" stroke="#22c55e" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
+                        </svg>
+                        <div class="center-text" id="ramText">0%</div>
+                    </div>
+                    <span class="label">RAM</span>
+                </div>
+            </div>
+            <div class="disk-list" id="diskContainer"></div>
+        </div>
+
+        <div class="controls">
+            <div class="full delay-group">
+                <label>Shutdown Delay (minutes)</label>
+                <input id="shutdownDelay" class="delay-input" type="number" min="0" value="5">
+            </div>
+            <button class="ctrl-btn ctrl-restart" id="btnRestart">⟳ Restart</button>
+            <button class="ctrl-btn ctrl-shutdown" id="btnShutdown">⏻ Shutdown</button>
+            <div class="ctrl-row">
+                <input id="cmdInput" class="ctrl-input" placeholder="Enter CMD command...">
+                <button class="ctrl-btn ctrl-cmd" id="btnCmd" style="flex-shrink:0;">▶ Run</button>
+            </div>
+            <pre id="cmdResult" class="ctrl-result">Ready to receive commands.</pre>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const DATABASE_URL = "https://nexus-bb8b3-default-rtdb.firebaseio.com";
+const TOKEN_KEY = "purple-auth-token";
+const MAX_RETRIES = 2;
+
+// ============================================================
+// STATE
+// ============================================================
+let authUrl = null;
+let wsUrl = null;
+let ws = null;
+let reconnectTimer = null;
+let devicesData = {};
+let deviceCards = new Map();
+let currentDeviceId = null;
+let updatePending = false;
+
+// ============================================================
+// DOM REFS
+// ============================================================
+const $ = id => document.getElementById(id);
+const authGate = $('authGate');
+const dashboard = $('dashboard');
+const loginForm = $('loginForm');
+const loginName = $('loginName');
+const loginPassword = $('loginPassword');
+const loginBtn = $('loginBtn');
+const loginMsg = $('loginMsg');
+const logoutBtn = $('logoutBtn');
+const statusDot = $('statusDot');
+const statusText = $('statusText');
+const deviceCount = $('deviceCount');
+const deviceCount2 = $('deviceCount2');
+const devicesContainer = $('devicesContainer');
+const emptyState = $('emptyState');
+const modalOverlay = $('modalOverlay');
+const modalClose = $('modalClose');
+const modalTitle = $('modalTitle');
+const modalSub = $('modalSub');
+const modalCommandUrl = $('modalCommandUrl');
+const modalInfo = $('modalInfo');
+const gaugeContainer = $('gaugeContainer');
+const diskContainer = $('diskContainer');
+const cpuCircle = $('cpuCircle');
+const cpuText = $('cpuText');
+const ramCircle = $('ramCircle');
+const ramText = $('ramText');
+const shutdownDelay = $('shutdownDelay');
+const btnRestart = $('btnRestart');
+const btnShutdown = $('btnShutdown');
+const cmdInput = $('cmdInput');
+const btnCmd = $('btnCmd');
+const cmdResult = $('cmdResult');
+
+// ============================================================
+// HELPERS
+// ============================================================
+function safeNum(v) {
+    const n = Number(v);
+    return Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 0;
+}
+function esc(v) {
+    return v == null ? '-' : String(v);
+}
+function color(v) {
+    const n = safeNum(v);
+    if (n >= 90) return '#ef4444';
+    if (n >= 70) return '#f59e0b';
+    if (n >= 40) return '#22c55e';
+    return '#3b82f6';
+}
+const CIRCUMFERENCE = 2 * Math.PI * 42;
+
+function updateGauge(circle, text, value) {
+    const v = safeNum(value);
+    const offset = CIRCUMFERENCE - (v / 100) * CIRCUMFERENCE;
+    circle.style.strokeDashoffset = offset;
+    circle.style.stroke = color(v);
+    text.textContent = v.toFixed(1) + '%';
+}
+
+// ============================================================
+// FETCH FIREBASE URLs (أسرع)
+// ============================================================
+async function fetchUrls(retry = 0) {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        
+        const res = await fetch(`${DATABASE_URL}/.json`, {
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        
+        if (data?.flask_server?.url) {
+            authUrl = data.flask_server.url;
+        }
+        if (data?.websocket_server?.url) {
+            wsUrl = data.websocket_server.url.replace('https://', 'wss://').replace('http://', 'ws://');
+        }
+        
+        if (!authUrl || !wsUrl) {
+            throw new Error('Missing URLs');
+        }
+        
+        return { authUrl, wsUrl };
+    } catch (e) {
+        if (retry < MAX_RETRIES) {
+            await new Promise(r => setTimeout(r, 500));
+            return fetchUrls(retry + 1);
+        }
+        throw new Error('Failed to fetch server URLs');
+    }
+}
+
+// ============================================================
+// AUTH (أسرع)
+// ============================================================
+async function login(name, password, retry = 0) {
+    if (!authUrl) {
+        if (retry < MAX_RETRIES) {
+            await fetchUrls();
+            return login(name, password, retry + 1);
+        }
+        throw new Error('Auth server not available');
+    }
+
+    try {
+        const res = await fetch(`${authUrl}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, password })
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+    } catch (e) {
+        if (retry < MAX_RETRIES) {
+            authUrl = null;
+            await new Promise(r => setTimeout(r, 300));
+            return login(name, password, retry + 1);
+        }
+        throw e;
+    }
+}
+
+async function checkToken(token, retry = 0) {
+    if (!authUrl) {
+        if (retry < MAX_RETRIES) {
+            await fetchUrls();
+            return checkToken(token, retry + 1);
+        }
+        return false;
+    }
+
+    try {
+        const res = await fetch(`${authUrl}/check`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+        });
+        const data = await res.json();
+        return data.states === 'True';
+    } catch (e) {
+        if (retry < MAX_RETRIES) {
+            authUrl = null;
+            await new Promise(r => setTimeout(r, 300));
+            return checkToken(token, retry + 1);
+        }
+        return false;
+    }
+}
+
+function showAuth(msg, isError = false) {
+    authGate.hidden = false;
+    dashboard.hidden = true;
+    loginMsg.textContent = msg || 'Enter your credentials to continue.';
+    loginMsg.className = 'auth-message' + (isError ? ' error' : '');
+    if (isError) {
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Sign In →';
+    }
+}
+
+function showDashboard() {
+    authGate.hidden = true;
+    dashboard.hidden = false;
+    document.documentElement.classList.add('has-session-token');
+    connectWebSocket();
+}
+
+// ============================================================
+// WEBSOCKET (أسرع)
+// ============================================================
+function connectWebSocket(retry = 0) {
+    if (!wsUrl) {
+        fetchUrls().then(() => {
+            connectWebSocket(0);
+        }).catch(() => {
+            setTimeout(() => connectWebSocket(retry + 1), 1000);
+        });
+        return;
+    }
+
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+
+    setStatus(false, 'Connecting...');
+    ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+        setStatus(true, 'Connected');
+        const token = sessionStorage.getItem(TOKEN_KEY);
+        if (token) {
+            ws.send(JSON.stringify({ type: 'front_end', token, connection_type: 'hand_shake' }));
+        }
+    };
+
+    ws.onmessage = (e) => {
+        try {
+            const data = JSON.parse(e.data);
+            if (!updatePending) {
+                updatePending = true;
+                requestAnimationFrame(() => {
+                    updateDevices(data);
+                    updatePending = false;
+                });
+            }
+        } catch (err) {
+            console.error('[WS] Parse error', err);
+        }
+    };
+
+    ws.onerror = () => {
+        setStatus(false, 'Error');
+    };
+
+    ws.onclose = () => {
+        setStatus(false, 'Disconnected');
+        clearTimeout(reconnectTimer);
+        
+        if (retry < MAX_RETRIES) {
+            reconnectTimer = setTimeout(() => {
+                connectWebSocket(retry + 1);
+            }, 1000);
+        } else {
+            wsUrl = null;
+            fetchUrls().then(() => {
+                connectWebSocket(0);
+            }).catch(() => {
+                reconnectTimer = setTimeout(() => connectWebSocket(0), 2000);
+            });
+        }
+    };
+}
+
+function setStatus(online, text) {
+    statusDot.className = 'status-dot' + (online ? ' online' : '');
+    statusText.textContent = text;
+}
+
+// ============================================================
+// DEVICES (تحديث فوري)
+// ============================================================
+function updateDevices(data) {
+    if (!data || typeof data !== 'object') { data = {}; }
+    devicesData = data;
+    const ids = new Set(Object.keys(data));
+
+    for (const [id, card] of deviceCards) {
+        if (!ids.has(id)) { card.remove(); deviceCards.delete(id); }
+    }
+
+    for (const id of ids) {
+        let card = deviceCards.get(id);
+        if (!card) {
+            card = document.createElement('div');
+            card.className = 'device-card';
+            card.innerHTML = `
+                <div class="icon">🖥️</div>
+                <div class="name">...</div>
+                <div class="ip">...</div>
+                <div class="url-badge"></div>
+                <div class="status"><span class="dot"></span> Online</div>
+            `;
+            card.addEventListener('click', () => openModal(id));
+            devicesContainer.appendChild(card);
+            deviceCards.set(id, card);
+        }
+        const d = data[id];
+        const c = d?.client_info || {};
+        const url = c?.url || '';
+        card.querySelector('.name').textContent = c.username || 'Device';
+        card.querySelector('.ip').textContent = c.ip || '0.0.0.0';
+        const badge = card.querySelector('.url-badge');
+        if (url) {
+            badge.textContent = url.replace('https://', '').replace('http://', '').slice(0, 30) + '...';
+            badge.title = url;
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    const count = ids.size;
+    deviceCount.textContent = count;
+    deviceCount2.textContent = count;
+    emptyState.hidden = count > 0;
+
+    if (currentDeviceId && !ids.has(currentDeviceId)) {
+        closeModal();
+    }
+    if (currentDeviceId && ids.has(currentDeviceId)) {
+        updateModal(currentDeviceId);
+    }
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(id) {
+    currentDeviceId = id;
+    updateModal(id);
+    modalOverlay.classList.add('show');
+}
+
+function closeModal() {
+    modalOverlay.classList.remove('show');
+    currentDeviceId = null;
+}
+
+modalClose.addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) closeModal();
+});
+
+function updateModal(id) {
+    const d = devicesData[id];
+    if (!d) return;
+    const c = d.client_info || {};
+    const r = d.device_info || {};
+
+    modalTitle.textContent = c.username || 'Device';
+    modalSub.textContent = c.ip || '0.0.0.0';
+
+    const cmdUrl = c.url || 'Not available';
+    modalCommandUrl.textContent = '🔗 ' + cmdUrl;
+
+    modalInfo.innerHTML = `
+        <div class="info-item"><div class="label">Hostname</div><div class="value">${esc(c.username)}</div></div>
+        <div class="info-item"><div class="label">User</div><div class="value">${esc(c.name)}</div></div>
+        <div class="info-item"><div class="label">IP</div><div class="value">${esc(c.ip)}</div></div>
+        <div class="info-item"><div class="label">OS</div><div class="value">${esc(c.system)}</div></div>
+        <div class="info-item"><div class="label">CPU</div><div class="value">${esc(c.cpu)}</div></div>
+        <div class="info-item"><div class="label">Type</div><div class="value">${esc(c.type)}</div></div>
+    `;
+
+    const cpu = safeNum(r.cpu?.cpu_usage);
+    updateGauge(cpuCircle, cpuText, cpu);
+
+    const ram = safeNum(r.ram?.used_100);
+    updateGauge(ramCircle, ramText, ram);
+
+    const disks = Object.keys(r).filter(k => k !== 'cpu' && k !== 'ram');
+    let diskHtml = '';
+    for (const k of disks) {
+        const disk = r[k];
+        if (!disk || typeof disk !== 'object') continue;
+        const used = safeNum(disk.used_100);
+        diskHtml += `
+            <div class="disk-item">
+                <div class="name">💾 ${esc(k)}</div>
+                <div class="mini-gauge">
+                    <div class="track">
+                        <div class="fill" style="width:${used}%;background:${color(used)};"></div>
+                    </div>
+                    <span class="pct" style="color:${color(used)};">${used.toFixed(1)}%</span>
+                </div>
+                <div class="details">
+                    <span>Total: ${esc(disk.total)} GB</span>
+                    <span>Used: ${esc(disk.used)} GB</span>
+                    <span>Free: ${esc(disk.free)} GB</span>
+                </div>
+            </div>
+        `;
+    }
+    diskContainer.innerHTML = diskHtml;
+}
+
+// ============================================================
+// COMMANDS
+// ============================================================
+function getDeviceCommandUrl() {
+    if (!currentDeviceId || !devicesData[currentDeviceId]) return null;
+    return devicesData[currentDeviceId].client_info?.url || null;
+}
+
+function getDeviceIP() {
+    if (!currentDeviceId || !devicesData[currentDeviceId]) return null;
+    return devicesData[currentDeviceId].client_info?.ip || null;
+}
+
+function getDeviceName() {
+    if (!currentDeviceId || !devicesData[currentDeviceId]) return 'Device';
+    return devicesData[currentDeviceId].client_info?.username || 'Device';
+}
+
+function getToken() {
+    return sessionStorage.getItem(TOKEN_KEY);
+}
+
+function showResult(text, type = '') {
+    cmdResult.textContent = text;
+    cmdResult.className = 'ctrl-result' + (type ? ' ' + type : '');
+}
+
+async function sendCommand(action, button) {
+    if (action === 'shutdown') {
+        const ip = getDeviceIP();
+        if (!ip) { showResult('Select a device first.', 'error'); return; }
+        const token = getToken();
+        if (!token) { showResult('Please sign in again.', 'error'); return; }
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            showResult('WebSocket is disconnected.', 'error');
+            return;
+        }
+        const minutes = Math.max(0, Math.round(Number(shutdownDelay.value) || 0));
+        const orig = button?.textContent;
+        if (button) { button.disabled = true; button.textContent = '⏳'; }
+        try {
+            ws.send(JSON.stringify({
+                type: 'front_end',
+                token,
+                command: 'shutdown',
+                ip: ip,
+                time: minutes * 60
+            }));
+            showResult(`✅ Shutdown sent to ${getDeviceName()} · ${minutes} min(s)`, 'success');
+        } catch (e) {
+            showResult(`❌ Failed: ${e.message}`, 'error');
+        } finally {
+            if (button) { button.disabled = false; button.textContent = orig; }
+        }
+        return;
+    }
+
+    const deviceUrl = getDeviceCommandUrl();
+    if (!deviceUrl) {
+        showResult('Device has no Cloudflare Tunnel URL.', 'error');
+        return;
+    }
+    const token = getToken();
+    if (!token) { showResult('Please sign in again.', 'error'); return; }
+
+    const isRestart = action === 'restart';
+    const cmd = isRestart ? '' : cmdInput.value.trim();
+    if (!isRestart && !cmd) { showResult('Enter a command to run.', 'error'); return; }
+
+    const orig = button?.textContent;
+    if (button) { button.disabled = true; button.textContent = '⏳'; }
+
+    try {
+        const endpoint = isRestart ? 'restart' : 'com';
+        const payload = isRestart ? { token } : { token, command: cmd };
+        const url = `${deviceUrl}/${endpoint}`;
+
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const raw = await res.text();
+        let data = {};
+        try { data = raw ? JSON.parse(raw) : {}; } catch { data = { result: raw }; }
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (data.error === 'Access') throw new Error('Access denied');
+        if (data.error) throw new Error(data.error);
+
+        const out = data.result || 'Command executed successfully.';
+        showResult(`✅ ${isRestart ? 'Restart' : 'CMD'}\n${out}`, 'success');
+    } catch (e) {
+        showResult(`❌ Failed: ${e.message}`, 'error');
+    } finally {
+        if (button) { button.disabled = false; button.textContent = orig; }
+    }
+}
+
+// ============================================================
+// EVENT BINDINGS
+// ============================================================
+btnRestart.addEventListener('click', () => sendCommand('restart', btnRestart));
+btnShutdown.addEventListener('click', () => sendCommand('shutdown', btnShutdown));
+btnCmd.addEventListener('click', () => sendCommand('cmd', btnCmd));
+cmdInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendCommand('cmd', btnCmd);
+});
+
+// ============================================================
+// AUTH FLOW
+// ============================================================
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = loginName.value.trim();
+    const pass = loginPassword.value;
+    if (!name || !pass) { showAuth('Enter all credentials.', true); return; }
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Signing in...';
+    showAuth('Authenticating...');
+
+    try {
+        const res = await login(name, pass);
+        if (res.states === 'True' && res.token) {
+            sessionStorage.setItem(TOKEN_KEY, res.token);
+            showDashboard();
+        } else {
+            showAuth('Invalid credentials.', true);
+        }
+    } catch (e) {
+        showAuth('Connection failed: ' + e.message, true);
+    } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Sign In →';
+    }
+});
+
+logoutBtn.addEventListener('click', () => {
+    sessionStorage.removeItem(TOKEN_KEY);
+    if (ws) { ws.close(); ws = null; }
+    showAuth('Signed out successfully.');
+});
+
+// ============================================================
+// INIT - فوري
+// ============================================================
+async function init() {
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    
+    if (token) {
+        try {
+            await fetchUrls();
+            const valid = await checkToken(token);
+            if (valid) {
+                showDashboard();
+                return;
+            } else {
+                sessionStorage.removeItem(TOKEN_KEY);
+            }
+        } catch (e) {
+            console.error('[Init]', e);
+        }
+    }
+    
+    try {
+        if (!authUrl || !wsUrl) {
+            await fetchUrls();
+        }
+    } catch (e) {
+        console.error('[Init]', e);
+        showAuth('Failed to connect. Retrying...', true);
+        setTimeout(init, 2000);
+        return;
+    }
+    showAuth();
+}
+
+// Start
+init();
+</script>
+
+</body>
+</html>
